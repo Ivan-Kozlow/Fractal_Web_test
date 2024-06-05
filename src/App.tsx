@@ -39,15 +39,14 @@ interface IRepoResponse {
 	name: string
 	stargazers_count: number
 }
+type TypeResponse = IUserResponse | IRepoResponse
 
 const baseUrl = 'https://api.github.com'
 
 export function App() {
 	const [url, setUrl] = useState(baseUrl)
 	const isFirstRender = useRef(true)
-	const [dataList, setDataList] = useState<IUserResponse | IRepoResponse>(
-		{} as IUserResponse | IRepoResponse
-	)
+	const [dataList, setDataList] = useState<TypeResponse>({} as TypeResponse)
 
 	useEffect(() => {
 		if (isFirstRender.current) {
@@ -57,7 +56,7 @@ export function App() {
 
 		const fetchData = async () => {
 			try {
-				const { data } = await axios.get<IUserResponse | IRepoResponse>(url)
+				const { data } = await axios.get<TypeResponse>(url)
 				setDataList(data)
 			} catch (error) {
 				toast.error((error as AxiosError<{ message: string }>).response?.data.message)
@@ -133,17 +132,16 @@ enum EnumSelect {
 	repo = 'repo',
 }
 
-type TypeDataListProps = { dataList: IUserResponse | IRepoResponse }
-
-const isUserResponse = (data: IUserResponse | IRepoResponse): data is IUserResponse => {
+const isUserResponse = (data: TypeResponse): data is IUserResponse => {
 	return (data as IUserResponse).public_repos !== undefined
 }
+type TypeDataListProps = { dataList: TypeResponse }
 
 export function DataList({ dataList }: TypeDataListProps) {
 	return isUserResponse(dataList) ? (
 		<section>
 			<p>Имя: {dataList?.name}</p>
-			<p>Кол-во репозиториев: {dataList?.public_repos}</p>
+			<p>Кол-во public репозиториев: {dataList?.public_repos}</p>
 		</section>
 	) : (
 		<section>
